@@ -1,0 +1,142 @@
+
+import { Area } from "./Area";
+import { AsistenciasMiembro } from "./AsistenciasMiembro";
+import { Cargo } from "./Cargo";
+import { ConfiguracionMembrersia } from "./ConfiguracionMembresia";
+import { Curso } from "./Curso";
+import { DetallePagoMembresia } from "./DetallePagoMembresia";
+import { Estudiante } from "./Estudiante";
+import { GrupoMiembro } from "./GrupoMiembro";
+import { Inscripcion } from "./Inscripcion";
+import { MembresiasMiembro } from "./MembresiasMiembro";
+import { MetodoPago } from "./MetoPago";
+import { PagoCurso } from "./PagoCurso";
+import { PagoMembresiasEstudiante } from "./PagoMembresiaMiembro";
+import { Periodo } from "./Periodo";
+import { Sesion } from "./Sesion";
+
+//para Cursos
+Periodo.hasMany(Curso,{
+    foreignKey:'idperiodo'
+})
+Curso.belongsTo(Periodo,{
+    foreignKey:'idperiodo'
+})
+
+// estudiantes 
+GrupoMiembro.hasMany(Estudiante,{
+    foreignKey:'idgruposmiembro'
+})
+
+Estudiante.belongsTo(GrupoMiembro,{
+    foreignKey:{
+        name:'idgruposmiembro',
+        allowNull:true
+    },
+    as:'GrupoDeMiembro'
+    
+})
+Cargo.hasMany(Estudiante,{
+    foreignKey:'idcargo'
+})
+Estudiante.belongsTo(Cargo,{
+    foreignKey:{
+        name:'idcargo',
+        allowNull:true
+    }
+})
+Area.hasMany(Estudiante,{
+    foreignKey:'idarea'
+})
+Estudiante.belongsTo(Area,{
+    foreignKey:{
+        name:'idarea',
+        allowNull:true
+    }
+})
+
+//para inscripcion tabla intermedia
+Estudiante.belongsToMany(Curso,{
+    through:Inscripcion,
+    foreignKey:'dni'
+});
+Inscripcion.belongsTo(Estudiante,{
+    foreignKey:'dni'
+})
+
+Curso.belongsToMany(Estudiante,{
+    through: Inscripcion,
+    foreignKey:'idcurso'
+})
+
+Inscripcion.belongsTo(Curso,{
+    foreignKey:'idcurso'
+})
+
+//para pagos de cursos
+Inscripcion.hasMany(PagoCurso,{
+    foreignKey:'idinscripcion'
+});
+PagoCurso.belongsTo(Inscripcion,{
+    foreignKey:'idinscripcion'
+})
+
+MetodoPago.hasMany(PagoCurso,{
+    foreignKey:'idmetodosdepago'
+});
+PagoCurso.belongsTo(MetodoPago,{
+    foreignKey:'idmetodosdepago'
+})
+
+//para membresias miembros
+Estudiante.hasMany(MembresiasMiembro,{
+    foreignKey:'dni'
+})
+MembresiasMiembro.belongsTo(Estudiante,{
+    foreignKey:'dni'
+})
+ConfiguracionMembrersia.hasMany(MembresiasMiembro,{
+    foreignKey:'idconfiguracionmembresia',
+});
+MembresiasMiembro.belongsTo(ConfiguracionMembrersia,{
+    foreignKey:'idconfiguracionmembresia'
+});
+
+// para pagos membresias
+MetodoPago.hasMany(PagoMembresiasEstudiante,{
+    foreignKey:'idmetodosdepago'
+})
+PagoMembresiasEstudiante.belongsTo(MetodoPago,{
+    foreignKey:'idmetodosdepago'
+})
+
+//para pagos y membresias y miembrso
+MembresiasMiembro.belongsToMany(PagoMembresiasEstudiante,{
+    through: DetallePagoMembresia,
+    foreignKey:'idmembresia'
+});
+DetallePagoMembresia.belongsTo(MembresiasMiembro,{
+    foreignKey:'idmembresia',
+    as:'Membresia'
+});
+
+PagoMembresiasEstudiante.belongsToMany(MembresiasMiembro,{
+    through:DetallePagoMembresia,
+    foreignKey:'idpagosmebresiasmiembro'
+});
+DetallePagoMembresia.belongsTo(PagoMembresiasEstudiante,{
+    foreignKey:'idpagosmebresiasmiembro'
+})
+
+//para sesion y asistencias 
+
+Sesion.hasMany(AsistenciasMiembro,{
+    foreignKey:'idsesion'
+})
+
+AsistenciasMiembro.belongsTo(Sesion,{
+    foreignKey:'idsesion'
+})
+
+
+
