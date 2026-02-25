@@ -8,20 +8,21 @@ export const obtenerListaDeCursosPorEstudiante = async (req: Request, res: Respo
         const cursos = await sequelize.query(
             `
             select
-            p.idperiodo, 
-            p.nombreperiodo,
-            c.idcurso, 
-            c.nombre,
-            i.idinscripcion,
+            p.idperiodo as idPeriodo, 
+            p.nombreperiodo as nombrePeriodo,
+            c.idcurso as idCurso, 
+            c.nombre as cursoNombre,
+            c.costo as costoCurso,
+            i.idinscripcion ,
             i.fechadeinscripcion,
             e.dni,
-            e.nombres,
-            e.apellidos,
+            e.nombres as nombresEstudiante,
+            e.apellidos as apellidosEstudiante,
             e.celular,
-            pc.numeroserie, 
-            pc.numerocorrelativo,
+            pc.numeroserie as  numeroSeriePagoCurso, 
+            pc.numerocorrelativo as  numeroCorrelativoPagoCurso,
             pc.fechapago,
-            pc.montototal,
+            pc.montototal as montoTotalPagoCurso,
             CASE
                     WHEN (SELECT SUM(pc1.montototal)
                         FROM pagocursos pc1
@@ -44,7 +45,7 @@ export const obtenerListaDeCursosPorEstudiante = async (req: Request, res: Respo
         return res.json(cursos);
 
     } catch (error) {
-        console.log(error);
+        console.log(error,'este es el error al obtener cursos');
         res.status(500).json({msg: 'Ocurrio un error al obtener la lista de cursos', error})
     }
 }

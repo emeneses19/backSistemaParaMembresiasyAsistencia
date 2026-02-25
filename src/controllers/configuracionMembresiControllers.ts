@@ -47,13 +47,14 @@ export const actualizarConfiguracionMembresia = async(req: Request, res: Respons
         }
         const configuracion = await ConfiguracionMembrersia.findOne();
         if(!configuracion){
-            return res.status(400).json({msg: 'No tiene uan configuracion previa para actualizar la informacion'});
+            return res.status(400).json({msg: 'No tiene una configuracion previa para actualizar la informacion'});
         }
         await configuracion.update(req.body);
         return res.status(200).json({msg: 'Configuracion de membresia actualziada', configuracion});
 
 
     } catch (error) {
+        console.log('esto es el error al actualizar configuracion', error);
         res.status(500).json({msg:'Ocurrio un error al actualizar la configuracion', error});
         
     }

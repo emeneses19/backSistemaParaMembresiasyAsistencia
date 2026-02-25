@@ -41,7 +41,7 @@ app.use('/estudiantes', estudianteRoutes);
 app.use('/metodospago', metodoDePagoRoutes);
 app.use('/inscripciones', inscripcionPagoRoutes);
 app.use('/pago-cursos', pagoCursoRoutes);
-app.use('/cursos', reportePagoCursoRoutes);
+app.use('/estudiante-cursos', reportePagoCursoRoutes);
 app.use('/membresias', reporteMembreriasRoutes);
 app.use('/pagomembresias', reportePagoMembreriasRoutes);
 app.use('/detallepagomembresias', reporteDetallePagoMembreriasRoutes);
