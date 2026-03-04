@@ -7,52 +7,58 @@ export const obtenerListaDeCursosPorEstudiante = async (req: Request, res: Respo
         const { dni } = req.params;
         const cursos = await sequelize.query(
             `
-            select
-            p.idperiodo as idPeriodo, 
-            p.nombreperiodo as nombrePeriodo,
-            c.idcurso as idCurso, 
-            c.nombre as cursoNombre,
-            c.costo as costoCurso,
-            i.idinscripcion ,
+            SELECT
+            p.idperiodo AS idPeriodo,
+            p.nombreperiodo AS nombrePeriodo,
+            c.idcurso AS idCurso,
+            c.nombre AS cursoNombre,
+            c.costo AS costoCurso,
+            i.idinscripcion,
             i.fechadeinscripcion,
             e.dni,
-            e.nombres as nombresEstudiante,
-            e.apellidos as apellidosEstudiante,
+            e.nombres AS nombresEstudiante,
+            e.apellidos AS apellidosEstudiante,
             e.celular,
-            pc.numeroserie as  numeroSeriePagoCurso, 
-            pc.numerocorrelativo as  numeroCorrelativoPagoCurso,
-            pc.fechapago,
-            pc.montototal as montoTotalPagoCurso,
             CASE
-                    WHEN (SELECT SUM(pc1.montototal)
-                        FROM pagocursos pc1
-                        WHERE pc1.idinscripcion = i.idinscripcion
-                        AND e.dni = i.dni) >= c.costo THEN 'Pagado'
-                    ELSE 'Pendiente'
-                END AS estato_Pago_Curso
-            from inscripcion as i
-            inner join estudiantes e on e.dni = i.dni
-            inner join cursos c on c.idcurso = i.idcurso
-            inner join periodos p on p.idperiodo = c.idperiodo
-            left join pagocursos pc on pc.idinscripcion = i.idinscripcion
-            where i.dni = :dni  ORDER BY i.fechadeinscripcion DESC;
+        WHEN (
+            SELECT
+                SUM(pc1.montototal)
+            FROM
+                pagocursos pc1
+            WHERE
+                pc1.idinscripcion = i.idinscripcion
+            AND e.dni = i.dni
+        ) >= c.costo THEN
+            'Pagado'
+        ELSE
+            'Pendiente'
+        END AS estato_Pago_Curso
+        FROM
+            inscripcion AS i
+        INNER JOIN estudiantes e ON e.dni = i.dni
+        INNER JOIN cursos c ON c.idcurso = i.idcurso
+        INNER JOIN periodos p ON p.idperiodo = c.idperiodo
+        WHERE
+            i.dni = :dni
+        ORDER BY
+            i.fechadeinscripcion DESC;
             `,
             {
                 type: QueryTypes.SELECT,
-                replacements: {dni}
+                replacements: { dni }
             }
         );
         return res.json(cursos);
 
     } catch (error) {
-        console.log(error,'este es el error al obtener cursos');
-        res.status(500).json({msg: 'Ocurrio un error al obtener la lista de cursos', error})
+        console.log(error, 'este es el error al obtener cursos');
+        res.status(500).json({ msg: 'Ocurrio un error al obtener la lista de cursos', error })
     }
 }
 
-export const reporteDeEstadoDePagoPorCurso = async(req: Request, res:Response)=>{
+export const reporteDeEstadoDePagoPorCurso = async (req: Request, res: Response) => {
     try {
-        let {idcurso} = req.params;
+        let { idcurso } = req.params;
         const estudiantesConEStadoDePagoCurso = await sequelize.query(`
             SELECT
             e.nombres,
@@ -80,15 +86,15 @@ export const reporteDeEstadoDePagoPorCurso = async(req: Request, res:Response)=>
             WHERE
                 c.idcurso = :idcurso
 
-            `,{
-                type: QueryTypes.SELECT,
-                replacements:{idcurso}
-            });
-            res.status(200).json(estudiantesConEStadoDePagoCurso);
+            `, {
+            type: QueryTypes.SELECT,
+            replacements: { idcurso }
+        });
+        res.status(200).json(estudiantesConEStadoDePagoCurso);
     } catch (error) {
         console.log('El error es este:' + ' ' + error);
         res.status(500).json({
-            msg:'Ocurrio un error al obener el reporte ', error
+            msg: 'Ocurrio un error al obener el reporte ', error
         })
     }
 

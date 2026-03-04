@@ -106,21 +106,24 @@ Estudiante.init({
         references: {
             model: GrupoMiembro,
             key: 'idgruposmiembro'
-        }
+        },
+        onDelete: 'NO ACTION'
     },
     idarea: {
         type: DataTypes.INTEGER,
         references: {
             model: Area,
             key: 'idarea'
-        }
+        },
+        onDelete: 'NO ACTION'
     },
     idcargo: {
         type: DataTypes.INTEGER,
         references: {
             model: Cargo,
             key: 'idcargo'
-        }
+        },
+        onDelete: 'NO ACTION'
     },
     detalle1: {
         type: DataTypes.STRING(100)

@@ -13,15 +13,14 @@ export const registrarPagoCurso = async (req: Request, res: Response) => {
         fechapago,
         montototal,
         idmetodosdepago,
-        usuarioregistra,
         idinscripcion
     } = req.body;
+    const USUARIO_SESION_TEMP = '1';
 
     if (!numeroserie ||
         !fechapago ||
         !montototal ||
         !idmetodosdepago ||
-        !usuarioregistra ||
         !idinscripcion
     ) {
         return res.status(400).json({ msg: 'Falta ingresar datos obligatorios' });
@@ -46,7 +45,7 @@ export const registrarPagoCurso = async (req: Request, res: Response) => {
         montototal,
         idmetodosdepago,
         estado: req.body.estado?.trim() === "" ? null : req.body.estado,
-        usuarioregistra,
+        usuarioregistra: USUARIO_SESION_TEMP,
         usuariomodifica: null,
         observaciones: req.body.observacion?.trim() === "" ? null : req.body.observacion,
         idinscripcion,
@@ -58,29 +57,29 @@ export const registrarPagoCurso = async (req: Request, res: Response) => {
 
 }
 
-export const anularPagoCurso = async(req: Request, res:Response)=>{
+export const anularPagoCurso = async (req: Request, res: Response) => {
     try {
-        let {idPpagocurso} = req.params;
+        let { idPpagocurso } = req.params;
         const pagoCursoEncontrado = await PagoCurso.findByPk(idPpagocurso);
-        if(!pagoCursoEncontrado){
-            return res.status(400).json({msg: 'El pago no se encontro'});
+        if (!pagoCursoEncontrado) {
+            return res.status(400).json({ msg: 'El pago no se encontro' });
         }
         await pagoCursoEncontrado.update({
-            estado:'Anulado'
+            estado: 'Anulado'
         });
-        return res.status(200).json({msg:'El pago anulado correctamente'});
+        return res.status(200).json({ msg: 'El pago anulado correctamente' });
     } catch (error) {
-        return res.status(500).json({msg:'Ocurrio un error al anular el pago', error});
-        
+        return res.status(500).json({ msg: 'Ocurrio un error al anular el pago', error });
+
     }
 
 }
 
-export const listarPagoCursoPorFecha = async(req:Request, res: Response)=>{
+export const listarPagoCursoPorFecha = async (req: Request, res: Response) => {
     try {
-        let {fechaInicio, fechaFin} = req.query;
-        if(!fechaInicio || !fechaFin){
-            return res.status(400).json({msg:'Debes proporcionar ambas fechas para el rango.'})
+        let { fechaInicio, fechaFin } = req.query;
+        if (!fechaInicio || !fechaFin) {
+            return res.status(400).json({ msg: 'Debes proporcionar ambas fechas para el rango.' })
         }
         const fechaInicioStr = fechaInicio as string;
         const fechaFinStr = fechaFin as string;
@@ -90,19 +89,21 @@ export const listarPagoCursoPorFecha = async(req:Request, res: Response)=>{
             return res.status(400).json({ msg: 'Fechas incorrectas. La fecha de fin debe ser igual o posterior a la de inicio.' });
         }
         const pagosdelCurso = await PagoCurso.findAll({
-            where:{
-                fechapago:{
-                    [Op.between]:[fechaInicioDate, fechaFinDate]
+            where: {
+                fechapago: {
+                    [Op.between]: [fechaInicioDate, fechaFinDate]
                 }
             },
-            include:[
-                {model:MetodoPago},
-                {model:Inscripcion,
-                    include:[
-                        {model:Estudiante},
-                        {model:Curso,
-                            include:[
-                                {model:Periodo}
+            include: [
+                { model: MetodoPago },
+                {
+                    model: Inscripcion,
+                    include: [
+                        { model: Estudiante },
+                        {
+                            model: Curso,
+                            include: [
+                                { model: Periodo }
                             ]
                         }
                     ]
@@ -114,6 +115,6 @@ export const listarPagoCursoPorFecha = async(req:Request, res: Response)=>{
 
     } catch (error) {
         console.log(error);
-        res.status(500).json({msg:'Ocurrio un error al obtener el reporte de pagos', error})
+        res.status(500).json({ msg: 'Ocurrio un error al obtener el reporte de pagos', error })
     }
 }

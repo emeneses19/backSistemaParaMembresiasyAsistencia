@@ -1,15 +1,15 @@
-import { DataTypes, Model,  } from "sequelize";
+import { DataTypes, Model, } from "sequelize";
 import { sequelize } from "../config/database";
 import { Periodo } from "./Periodo";
 
-export interface CursoAtributes{
+export interface CursoAtributes {
     idcurso: number;
     nombre: string;
     costo: number;
     idperiodo: number;
 }
 
-export class Curso extends Model<CursoAtributes> implements CursoAtributes{
+export class Curso extends Model<CursoAtributes> implements CursoAtributes {
     public idcurso!: number;
     public nombre!: string;
     public costo!: number;
@@ -17,32 +17,33 @@ export class Curso extends Model<CursoAtributes> implements CursoAtributes{
 }
 
 Curso.init({
-    idcurso:{
+    idcurso: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,
     },
-    nombre:{
+    nombre: {
         type: DataTypes.STRING(100),
         allowNull: false,
     },
-    costo:{
-        type: DataTypes.DECIMAL(10,2),
+    costo: {
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
-    idperiodo:{
+    idperiodo: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references:{
+        references: {
             model: Periodo,
-            key:'idperiodo'
-        }
+            key: 'idperiodo'
+        },
+        onDelete: 'NO ACTION'
     }
-},{
+}, {
     sequelize,
-    modelName:'Curso',
-    tableName:'cursos',
-    timestamps:false
+    modelName: 'Curso',
+    tableName: 'cursos',
+    timestamps: false
 
 })

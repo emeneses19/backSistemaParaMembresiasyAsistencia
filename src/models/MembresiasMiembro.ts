@@ -4,20 +4,20 @@ import { Estudiante } from "./Estudiante";
 import { ConfiguracionMembrersia } from "./ConfiguracionMembresia";
 
 
-export interface MembresiasMiembroAtributes{
+export interface MembresiasMiembroAtributes {
     idmembresia?: number,
-    dni:string,
-    descripcionmembresia:string,
-    fechainicio:Date,
-    fechalimitedepago:Date,
-    fechavencimientosugerida:Date,
-    montoesperado:number,
-    montopagado?:number,
-    estadopago?:string,
-    idconfiguracionmembresia:number
+    dni: string,
+    descripcionmembresia: string,
+    fechainicio: Date,
+    fechalimitedepago: Date,
+    fechavencimientosugerida: Date,
+    montoesperado: number,
+    montopagado?: number,
+    estadopago?: string,
+    idconfiguracionmembresia: number
 }
 
-export class MembresiasMiembro extends Model<MembresiasMiembroAtributes> implements MembresiasMiembroAtributes{
+export class MembresiasMiembro extends Model<MembresiasMiembroAtributes> implements MembresiasMiembroAtributes {
     public idmembresia?: number;
     public dni!: string;
     public descripcionmembresia!: string;
@@ -31,55 +31,57 @@ export class MembresiasMiembro extends Model<MembresiasMiembroAtributes> impleme
 }
 
 MembresiasMiembro.init({
-    idmembresia:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
+    idmembresia: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
-    dni:{
-        type:DataTypes.STRING(8),
-        allowNull:false,
-        references:{
+    dni: {
+        type: DataTypes.STRING(8),
+        allowNull: false,
+        references: {
             model: Estudiante,
-            key:'dni'
-        }
+            key: 'dni'
+        },
+        onDelete: 'NO ACTION'
     },
-    descripcionmembresia:{
-        type:DataTypes.STRING(55),
-        allowNull:false,
+    descripcionmembresia: {
+        type: DataTypes.STRING(55),
+        allowNull: false,
 
     },
-    fechainicio:{
+    fechainicio: {
         type: DataTypes.DATE,
-        allowNull:false,
+        allowNull: false,
     },
-    fechalimitedepago:{
+    fechalimitedepago: {
         type: DataTypes.DATE,
         allowNull: false
     },
-    fechavencimientosugerida:{
+    fechavencimientosugerida: {
         type: DataTypes.DATE,
         allowNull: false
     },
     montoesperado: {
-        type:DataTypes.DECIMAL(10,2),
-        allowNull:false
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
     },
-    montopagado:{
-        type:DataTypes.DECIMAL(10,2)
+    montopagado: {
+        type: DataTypes.DECIMAL(10, 2)
     },
-    idconfiguracionmembresia:{
+    idconfiguracionmembresia: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references:{
+        references: {
             model: ConfiguracionMembrersia,
-            key:'idconfiguracionmembresia'
-        }
+            key: 'idconfiguracionmembresia'
+        },
+        onDelete: 'NO ACTION'
     }
-},{
+}, {
     sequelize,
-    modelName:'MiembrosMembresia',
-    tableName:'membresiasmiembros',
-    timestamps:false
+    modelName: 'MiembrosMembresia',
+    tableName: 'membresiasmiembros',
+    timestamps: false
 });

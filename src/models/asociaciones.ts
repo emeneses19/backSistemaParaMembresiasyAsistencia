@@ -16,126 +16,141 @@ import { Periodo } from "./Periodo";
 import { Sesion } from "./Sesion";
 
 //para Cursos
-Periodo.hasMany(Curso,{
-    foreignKey:'idperiodo'
+Periodo.hasMany(Curso, {
+    foreignKey: 'idperiodo'
 })
-Curso.belongsTo(Periodo,{
-    foreignKey:'idperiodo'
+Curso.belongsTo(Periodo, {
+    foreignKey: 'idperiodo',
+    onDelete: 'NO ACTION'
 })
 
 // estudiantes 
-GrupoMiembro.hasMany(Estudiante,{
-    foreignKey:'idgruposmiembro'
+GrupoMiembro.hasMany(Estudiante, {
+    foreignKey: 'idgruposmiembro'
 })
 
-Estudiante.belongsTo(GrupoMiembro,{
-    foreignKey:{
-        name:'idgruposmiembro',
-        allowNull:true
+Estudiante.belongsTo(GrupoMiembro, {
+    foreignKey: {
+        name: 'idgruposmiembro',
+        allowNull: true
     },
-    as:'GrupoDeMiembro'
-    
+    as: 'GrupoDeMiembro',
+    onDelete: 'NO ACTION'
+
 })
-Cargo.hasMany(Estudiante,{
-    foreignKey:'idcargo'
+Cargo.hasMany(Estudiante, {
+    foreignKey: 'idcargo'
 })
-Estudiante.belongsTo(Cargo,{
-    foreignKey:{
-        name:'idcargo',
-        allowNull:true
-    }
+Estudiante.belongsTo(Cargo, {
+    foreignKey: {
+        name: 'idcargo',
+        allowNull: true,
+    },
+    onDelete: 'NO ACTION'
 })
-Area.hasMany(Estudiante,{
-    foreignKey:'idarea'
+Area.hasMany(Estudiante, {
+    foreignKey: 'idarea'
 })
-Estudiante.belongsTo(Area,{
-    foreignKey:{
-        name:'idarea',
-        allowNull:true
-    }
+Estudiante.belongsTo(Area, {
+    foreignKey: {
+        name: 'idarea',
+        allowNull: true
+    },
+    onDelete: 'NO ACTION'
 })
 
 //para inscripcion tabla intermedia
-Estudiante.belongsToMany(Curso,{
-    through:Inscripcion,
-    foreignKey:'dni'
-});
-Inscripcion.belongsTo(Estudiante,{
-    foreignKey:'dni'
-})
-
-Curso.belongsToMany(Estudiante,{
+Estudiante.belongsToMany(Curso, {
     through: Inscripcion,
-    foreignKey:'idcurso'
+    foreignKey: 'dni'
+});
+Inscripcion.belongsTo(Estudiante, {
+    foreignKey: 'dni',
+    onDelete: 'NO ACTION'
 })
 
-Inscripcion.belongsTo(Curso,{
-    foreignKey:'idcurso'
+Curso.belongsToMany(Estudiante, {
+    through: Inscripcion,
+    foreignKey: 'idcurso'
+})
+
+Inscripcion.belongsTo(Curso, {
+    foreignKey: 'idcurso',
+    onDelete: 'NO ACTION'
 })
 
 //para pagos de cursos
-Inscripcion.hasMany(PagoCurso,{
-    foreignKey:'idinscripcion'
+Inscripcion.hasMany(PagoCurso, {
+    foreignKey: 'idinscripcion'
 });
-PagoCurso.belongsTo(Inscripcion,{
-    foreignKey:'idinscripcion'
+PagoCurso.belongsTo(Inscripcion, {
+    foreignKey: 'idinscripcion',
+    onDelete: 'NO ACTION'
 })
 
-MetodoPago.hasMany(PagoCurso,{
-    foreignKey:'idmetodosdepago'
+MetodoPago.hasMany(PagoCurso, {
+    foreignKey: 'idmetodosdepago'
 });
-PagoCurso.belongsTo(MetodoPago,{
-    foreignKey:'idmetodosdepago'
+PagoCurso.belongsTo(MetodoPago, {
+    foreignKey: 'idmetodosdepago',
+    onDelete: 'NO ACTION'
 })
 
 //para membresias miembros
-Estudiante.hasMany(MembresiasMiembro,{
-    foreignKey:'dni'
+Estudiante.hasMany(MembresiasMiembro, {
+    foreignKey: 'dni'
 })
-MembresiasMiembro.belongsTo(Estudiante,{
-    foreignKey:'dni'
+MembresiasMiembro.belongsTo(Estudiante, {
+    foreignKey: 'dni',
+    onDelete: 'NO ACTION'
 })
-ConfiguracionMembrersia.hasMany(MembresiasMiembro,{
-    foreignKey:'idconfiguracionmembresia',
+ConfiguracionMembrersia.hasMany(MembresiasMiembro, {
+    foreignKey: 'idconfiguracionmembresia',
 });
-MembresiasMiembro.belongsTo(ConfiguracionMembrersia,{
-    foreignKey:'idconfiguracionmembresia'
+MembresiasMiembro.belongsTo(ConfiguracionMembrersia, {
+    foreignKey: 'idconfiguracionmembresia',
+    onDelete: 'NO ACTION'
 });
 
 // para pagos membresias
-MetodoPago.hasMany(PagoMembresiasEstudiante,{
-    foreignKey:'idmetodosdepago'
+MetodoPago.hasMany(PagoMembresiasEstudiante, {
+    foreignKey: 'idmetodosdepago'
 })
-PagoMembresiasEstudiante.belongsTo(MetodoPago,{
-    foreignKey:'idmetodosdepago'
+PagoMembresiasEstudiante.belongsTo(MetodoPago, {
+    foreignKey: 'idmetodosdepago',
+    onDelete: 'NO ACTION'
+
 })
 
 //para pagos y membresias y miembrso
-MembresiasMiembro.belongsToMany(PagoMembresiasEstudiante,{
+MembresiasMiembro.belongsToMany(PagoMembresiasEstudiante, {
     through: DetallePagoMembresia,
-    foreignKey:'idmembresia'
+    foreignKey: 'idmembresia'
 });
-DetallePagoMembresia.belongsTo(MembresiasMiembro,{
-    foreignKey:'idmembresia',
-    as:'Membresia'
+DetallePagoMembresia.belongsTo(MembresiasMiembro, {
+    foreignKey: 'idmembresia',
+    as: 'Membresia',
+    onDelete: 'NO ACTION'
 });
 
-PagoMembresiasEstudiante.belongsToMany(MembresiasMiembro,{
-    through:DetallePagoMembresia,
-    foreignKey:'idpagosmebresiasmiembro'
+PagoMembresiasEstudiante.belongsToMany(MembresiasMiembro, {
+    through: DetallePagoMembresia,
+    foreignKey: 'idpagosmebresiasmiembro'
 });
-DetallePagoMembresia.belongsTo(PagoMembresiasEstudiante,{
-    foreignKey:'idpagosmebresiasmiembro'
+DetallePagoMembresia.belongsTo(PagoMembresiasEstudiante, {
+    foreignKey: 'idpagosmebresiasmiembro',
+    onDelete: 'NO ACTION'
 })
 
 //para sesion y asistencias 
 
-Sesion.hasMany(AsistenciasMiembro,{
-    foreignKey:'idsesion'
+Sesion.hasMany(AsistenciasMiembro, {
+    foreignKey: 'idsesion'
 })
 
-AsistenciasMiembro.belongsTo(Sesion,{
-    foreignKey:'idsesion'
+AsistenciasMiembro.belongsTo(Sesion, {
+    foreignKey: 'idsesion',
+    onDelete: 'NO ACTION'
 })
 
 
