@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { PagoCurso } from "../models/PagoCurso";
+import { QueryTypes } from "sequelize";
+import { sequelize } from "../config/database";
 import { Op } from "sequelize";
 import { MetodoPago } from "../models/MetoPago";
 import { Inscripcion } from "../models/Inscripcion";
@@ -77,44 +79,84 @@ export const anularPagoCurso = async (req: Request, res: Response) => {
 
 export const listarPagoCursoPorFecha = async (req: Request, res: Response) => {
     try {
-        let { fechaInicio, fechaFin } = req.query;
+
+        const { fechaInicio, fechaFin } = req.query;
+
         if (!fechaInicio || !fechaFin) {
-            return res.status(400).json({ msg: 'Debes proporcionar ambas fechas para el rango.' })
+            return res.status(400).json({
+                msg: 'Debes proporcionar ambas fechas para el rango.'
+            });
         }
-        const fechaInicioStr = fechaInicio as string;
-        const fechaFinStr = fechaFin as string;
-        const fechaInicioDate = new Date(fechaInicioStr);
-        const fechaFinDate = new Date(fechaFinStr);
-        if (isNaN(fechaInicioDate.getTime()) || isNaN(fechaFinDate.getTime()) || fechaFinDate < fechaInicioDate) {
-            return res.status(400).json({ msg: 'Fechas incorrectas. La fecha de fin debe ser igual o posterior a la de inicio.' });
+
+        const fechaInicioDate = new Date(fechaInicio as string);
+        const fechaFinDate = new Date(fechaFin as string);
+
+        if (
+            isNaN(fechaInicioDate.getTime()) ||
+            isNaN(fechaFinDate.getTime()) ||
+            fechaFinDate < fechaInicioDate
+        ) {
+            return res.status(400).json({
+                msg: 'Fechas incorrectas. La fecha de fin debe ser igual o posterior a la de inicio.'
+            });
         }
-        const pagosdelCurso = await PagoCurso.findAll({
-            where: {
-                fechapago: {
-                    [Op.between]: [fechaInicioDate, fechaFinDate]
-                }
-            },
-            include: [
-                { model: MetodoPago },
-                {
-                    model: Inscripcion,
-                    include: [
-                        { model: Estudiante },
-                        {
-                            model: Curso,
-                            include: [
-                                { model: Periodo }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        })
+
+        const pagosdelCurso = await sequelize.query(
+
+            `
+       SELECT 
+       pc.idPpagocurso,
+        pc.numeroserie AS serie,  
+        pc.numerocorrelativo,
+        pc.fechapago,
+        pc.montototal AS montoTotalPago,
+        pc.estado,
+        pc.idmetodosdepago AS pagoCodigoMedioDePago,
+        pc.idinscripcion AS pagoCursoCodigoInscripcion,
+        pc.usuarioregistra,
+        pc.usuariomodifica,
+        pc.fechadeultimamodificacion,
+        pc.observaciones,
+        mp.idmetodosdepago AS medioDePagoCodigo,
+        mp.nombre AS medioDePagoNombre,
+        i.idinscripcion AS inscripcionCodigo,
+        e.dni,
+        e.nombres,
+        e.apellidos,
+        c.idcurso AS cursoCodigo, 
+        c.nombre AS cursoNombre,
+        p.idperiodo AS periodoCodigo,
+        p.nombreperiodo AS periodoNombre
+    FROM pagocursos pc 
+    INNER JOIN inscripcion i ON pc.idinscripcion = i.idinscripcion
+    INNER JOIN metodosdepago mp ON mp.idmetodosdepago = pc.idmetodosdepago
+    INNER JOIN estudiantes e ON e.dni = i.dni
+    INNER JOIN cursos c ON c.idcurso = i.idcurso
+    INNER JOIN periodos p ON p.idperiodo = c.idperiodo 
+    WHERE pc.fechapago BETWEEN :fechaInicio AND :fechaFin
+    ORDER BY pc.fechapago DESC
+        `,
+
+            {
+                replacements: {
+                    fechaInicio: fechaInicioDate,
+                    fechaFin: fechaFinDate
+                },
+                type: QueryTypes.SELECT
+            }
+        );
 
         return res.json(pagosdelCurso);
 
     } catch (error) {
+
         console.log(error);
-        res.status(500).json({ msg: 'Ocurrio un error al obtener el reporte de pagos', error })
+
+        res.status(500).json({
+            msg: 'Ocurrió un error al obtener el reporte de pagos',
+            error
+        });
     }
+
+
 }
