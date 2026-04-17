@@ -27,17 +27,17 @@ export type PagoMembresiaEstudianteCreationAttributes = Optional<
     | 'usuariomodifica'
 >
 export class PagoMembresiasEstudiante extends Model<PagoMembresiasEstudianteAtributes> implements PagoMembresiasEstudianteAtributes {
-    idpagosmebresiasmiembro!: number;
+    idpagosmebresiasmiembro?: number;
     seriecorrelativopagomembresia!: string;
     numerocorrelativopagomembresia!: number;
     fecha!: Date;
     fechahoraregistro!: Date;
     montotal!: number;
-    observacion!: string;
+    observacion?: string;
     idmetodosdepago!: number;
     estado!: string;
-    fechaultimaactualizacion!: Date;
-    usuarioregistra: string = "1";
+    fechaultimaactualizacion?: Date;
+    usuarioregistra!: string;
 
 }
 

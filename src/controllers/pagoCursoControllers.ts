@@ -88,12 +88,10 @@ export const listarPagoCursoPorFecha = async (req: Request, res: Response) => {
             });
         }
 
-        const fechaInicioDate = new Date(fechaInicio as string);
-        const fechaFinDate = new Date(fechaFin as string);
+        const fechaInicioDate = (fechaInicio as string);
+        const fechaFinDate = (fechaFin as string);
 
         if (
-            isNaN(fechaInicioDate.getTime()) ||
-            isNaN(fechaFinDate.getTime()) ||
             fechaFinDate < fechaInicioDate
         ) {
             return res.status(400).json({
@@ -133,7 +131,7 @@ export const listarPagoCursoPorFecha = async (req: Request, res: Response) => {
     INNER JOIN estudiantes e ON e.dni = i.dni
     INNER JOIN cursos c ON c.idcurso = i.idcurso
     INNER JOIN periodos p ON p.idperiodo = c.idperiodo 
-    WHERE pc.fechapago BETWEEN :fechaInicio AND :fechaFin
+    WHERE DATE(pc.fechapago) BETWEEN :fechaInicio AND :fechaFin
     ORDER BY pc.fechapago DESC
         `,
 

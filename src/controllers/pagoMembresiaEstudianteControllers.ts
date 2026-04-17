@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { PagoMembresiasEstudiante } from '../models/PagoMembresiaMiembro'
 import { sequelize } from "../config/database";
 import { DetallePagoMembresia } from "../models/DetallePagoMembresia";
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 import { MetodoPago } from "../models/MetoPago";
 import { MembresiasMiembro } from "../models/MembresiasMiembro";
 import { Estudiante } from "../models/Estudiante";
@@ -16,8 +16,11 @@ export const registrarPagoMembresias = async (req: Request, res: Response) => {
             fecha,
             montotal,
             idmetodosdepago,
-            detallesMembresias
+            detallesMembresias,
         } = req.body;
+
+        const USUARIO_SESION_TEMP = 'USER1';
+
         if (
             !seriecorrelativopagomembresia ||
             !fecha ||
@@ -34,13 +37,13 @@ export const registrarPagoMembresias = async (req: Request, res: Response) => {
         const ultimoPago = await PagoMembresiasEstudiante.findOne({
             where: { seriecorrelativopagomembresia },
             order: [['numerocorrelativopagomembresia', 'DESC']],
-            transaction:t
+            transaction: t
         })
         let nuevoCorrelativo = 1;
         if (ultimoPago) {
             nuevoCorrelativo = ultimoPago.numerocorrelativopagomembresia + 1;
         }
-        //insertr pago y detalle
+        //insertar pago y detalle
         const pagoNuevoMembresia = await PagoMembresiasEstudiante.create({
             seriecorrelativopagomembresia: seriecorrelativopagomembresia,
             numerocorrelativopagomembresia: nuevoCorrelativo,
@@ -48,7 +51,8 @@ export const registrarPagoMembresias = async (req: Request, res: Response) => {
             montotal: montotal,
             observacion: req.body.observacion?.trim() === "" ? null : req.body.observacion,
             idmetodosdepago: idmetodosdepago,
-            estado: 'Activo'
+            estado: 'Activo',
+            usuarioregistra: USUARIO_SESION_TEMP,
 
         }, {
             transaction: t
@@ -63,7 +67,7 @@ export const registrarPagoMembresias = async (req: Request, res: Response) => {
 
         //actualizar el monto pagado para el estudiante
         for (const detalle of detallesMembresias) {
-           await MembresiasMiembro.update(
+            await MembresiasMiembro.update(
                 {
                     montopagado: sequelize.literal(`montopagado + ${Number(detalle.montomembresia)}`),
                 },
@@ -72,7 +76,7 @@ export const registrarPagoMembresias = async (req: Request, res: Response) => {
                         idmembresia: detalle.idmembresia
                     },
                     transaction: t
-                
+
                 }
             )
         }
@@ -98,25 +102,51 @@ export const reporteDePagosMembresiPorFecha = async (req: Request, res: Response
         if (!fechaInicio || !fechaFin) {
             return res.status(400).json({ msg: 'Ingrese las dos fechas validas' })
         }
-        const fechavalidaInicio = new Date(fechaInicio as string);
-        const fechaValidaFin = new Date(fechaFin as string);
+        const fechavalidaInicio = (fechaInicio as string);
+        const fechaValidaFin = (fechaFin as string);
         if (fechavalidaInicio > fechaValidaFin) {
             return res.status(400).json({ msg: 'el rango de fechas selecionadas en incorrecta' })
         }
-        const pagosMembresias = await PagoMembresiasEstudiante.findAll({
-            where: {
-                fecha: {
-                    [Op.between]: [fechavalidaInicio, fechaValidaFin]
-                }
-            },
-            include: [
-                {
-                    model: MetodoPago,
-                    attributes: ['nombre']
-
+        const pagosMembresias = await sequelize.query(
+            `
+           SELECT 
+            pm.idpagosmebresiasmiembro AS codigoPago,
+            pm.seriecorrelativopagomembresia AS serie,
+            pm.numerocorrelativopagomembresia AS numero,
+            pm.fecha,
+            pm.montotal,
+            pm.observacion,
+            pm.idmetodosdepago AS pagoCodMetoPago,
+            pm.estado,
+            pm.usuarioregistra,
+            pm.usuariomodifica,
+            pm.fechahoraregistro,
+            pm.fechaultimaactualizacion,
+            m.idmetodosdepago AS metodoPagoCodigo,
+            m.nombre AS metodoPagoNombre,
+            m.descripcion AS metodoPagoDescripcion,
+			e.dni,
+			e.nombres,
+			e.apellidos,
+			mm.descripcionmembresia
+            FROM pagosmebresiasmiembros pm
+            INNER JOIN metodosdepago m on  pm.idmetodosdepago = m.idmetodosdepago
+			INNER JOIN detalledepagos dp on dp.idpagosmebresiasmiembro = pm.idpagosmebresiasmiembro
+			INNER JOIN membresiasmiembros mm on mm.idmembresia = dp.idmembresia
+			INNER JOIN estudiantes e on e.dni = mm.dni
+			WHERE DATE(pm.fecha)  BETWEEN :fechaInicio AND :fechaFin
+            GROUP BY pm.idpagosmebresiasmiembro
+			ORDER BY pm.fecha DESC;
+            `,
+            {
+                replacements: {
+                    fechaInicio: fechavalidaInicio,
+                    fechaFin: fechaValidaFin
                 },
-            ]
-        })
+                type: QueryTypes.SELECT
+            }
+
+        )
         return res.status(200).json(pagosMembresias);
 
     } catch (error) {
@@ -130,24 +160,28 @@ export const previsualizarPago = async (req: Request, res: Response) => {
     try {
         let { idpagosmebresiasmiembro } = req.params;
         const pagoMembresiaEncontrado = await PagoMembresiasEstudiante.findByPk(idpagosmebresiasmiembro,
-            {include:[
-                {
-                    model: MetodoPago,
-                    attributes: ['nombre']
+            {
+                include: [
+                    {
+                        model: MetodoPago,
+                        attributes: ['nombre']
 
-                },
-                
-                { model: MembresiasMiembro,
-                    attributes: ['dni','descripcionmembresia','fechainicio','fechavencimientosugerida','montoesperado','montopagado' ],
-                    include:[
-                        {model:Estudiante,
-                            attributes:['dni', 'nombres', 'apellidos', 'celular', 'correo',]
-                        }
-                    ]
-                 }
+                    },
 
-        ]}
-    )
+                    {
+                        model: MembresiasMiembro,
+                        attributes: ['dni', 'descripcionmembresia', 'fechainicio', 'fechavencimientosugerida', 'montoesperado', 'montopagado'],
+                        include: [
+                            {
+                                model: Estudiante,
+                                attributes: ['dni', 'nombres', 'apellidos', 'celular', 'correo',]
+                            }
+                        ]
+                    }
+
+                ]
+            }
+        )
         return res.status(200).json(pagoMembresiaEncontrado)
     } catch (error) {
         console.log(error);

@@ -6,7 +6,8 @@ import { col, fn, literal, Op } from "sequelize";
 export const registrarAsistenciaMiembro = async (req: Request, res: Response) => {
     try {
         const { idasistenciasmiembro } = req.params;
-        const { asistio, usuario } = req.body;
+        const { asistio } = req.body;
+        let USUARIO = 'Fani';
         if (!idasistenciasmiembro) {
             return res.status(400).json({ msg: 'Selecione para registra asistencia' });
         }
@@ -17,7 +18,7 @@ export const registrarAsistenciaMiembro = async (req: Request, res: Response) =>
         }
         registroEncontrado.update({
             asistio: asistio,
-            usuarioregistra: usuario
+            usuarioregistra: USUARIO
         })
         return res.status(200).json({
             msg: 'Asistencia registrada correctamente',
@@ -58,7 +59,7 @@ export const listaDeAsistenciasPorRangoFechas = async (req: Request, res: Respon
                 [fn('SUM', literal('CASE WHEN asistio=TRUE THEN 1 ELSE 0 END')), 'totalAsistencias'],
                 [fn('SUM', literal('CASE WHEN asistio=FALSE THEN 1 ELSE 0 END')), 'totalFaltas'],
                 [fn('COUNT', col('AsistenciasMiembro.idsesion')), 'totalSesiones'],
-                [literal(`ROUND(SUM(CASE WHEN asistio = TRUE THEN 1 ELSE 0 END) * 100.0 / COUNT(AsistenciasMiembro.idsesion), 2)`),'porcentajeAsistencia']                
+                [literal(`ROUND(SUM(CASE WHEN asistio = TRUE THEN 1 ELSE 0 END) * 100.0 / COUNT(AsistenciasMiembro.idsesion), 2)`), 'porcentajeAsistencia']
 
             ],
             include: [
@@ -69,7 +70,11 @@ export const listaDeAsistenciasPorRangoFechas = async (req: Request, res: Respon
                         fechasesion: {
                             [Op.between]: [fechaInicioValida, fechaFinValida]
                         },
-                        ...(idgruposmiembro ? { idgruposmiembro } : {})
+                        habilitado: {
+                            [Op.eq]: true
+                        },
+                        ...(idgruposmiembro ? { idgruposmiembro } : {}),
+
                     }
                 }
             ],
