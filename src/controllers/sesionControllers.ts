@@ -119,3 +119,18 @@ export const obtenerListaDeSesiones = async (req: Request, res: Response) => {
         return res.status(500).json({ msg: 'Ocurio un eror al buscar la lista', error });
     }
 }
+
+export const dardeBaja = async (req: Request, res: Response) => {
+    try {
+        let { idsesion } = req.params;
+        const sesionEncontrada = await Sesion.findByPk(idsesion);
+        if (!sesionEncontrada) {
+            return res.status(400).json({ msg: 'No se encontro la isncripcion' });
+
+        }
+        sesionEncontrada.update({ habilitado: false });
+        return res.status(200).json({ msg: `Sesion dado de baja` });
+    } catch (error) {
+        return res.status(500).json({ msg: `Ocurrio un error al dar de baja sesion `, error });
+    }
+}

@@ -27,3 +27,8 @@ coverage/
 # Archivos de sistema (ya los tienes, pero por si acaso)
 .DS_Store
 Thumbs.db
+
+#doccker
+.dockerignore
+docker-compose.yml
+Dockerfile

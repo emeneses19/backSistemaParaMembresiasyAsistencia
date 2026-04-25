@@ -9,13 +9,13 @@ async function main() {
   try {
     await sequelize.authenticate();
     console.log('Conexión con la base de datos establecida.');
-    
+
     //sincroniza modelos mientras estas en desarrollo
-    await sequelize.sync({alter:true});
+    await sequelize.sync({ alter: true });
     console.log("Tablas sincronizadas");
-     // Se ejecuta todos los días a las 00:00 (medianoche)
+    // Se ejecuta todos los días a las 00:00 (medianoche)
     cron.schedule('0 0 * * *', () => {
-        insertarMembresiasDeMiembrosTarea();
+      insertarMembresiasDeMiembrosTarea();
     });
     console.log('Tarea de inserción de membresías programada.');
 

@@ -9,7 +9,7 @@ let mensajeError = 'Ocurrio un error al realizar la';
 
 export const crearInscripcion = async (req: Request, res: Response) => {
     try {
-        const { idinscripcion,fechadeinscripcion, estado, dni, idcurso } = req.body;
+        const { idinscripcion, fechadeinscripcion, estado, dni, idcurso } = req.body;
         if (!idinscripcion && !fechadeinscripcion && !estado && !dni && !idcurso) {
             return res.status(400).json({ msg: 'No se ingreso los datos correctamnete' });
         }
@@ -93,33 +93,33 @@ export const listarTodoInscripcionPorFecha = async (req: Request, res: Response)
     } catch (error) {
 
         res.status(500).json({
-            status:'error',
-            msg:`${mensajeError} al obtner el reporte`,
-            error:error instanceof Error ? error.message : 'Error desconocido'
+            status: 'error',
+            msg: `${mensajeError} al obtner el reporte`,
+            error: error instanceof Error ? error.message : 'Error desconocido'
         })
     }
 }
 
-export const listaDeInscripcionesPorCurso = async(req: Request, res:Response)=>{
+export const listaDeInscripcionesPorCurso = async (req: Request, res: Response) => {
     try {
-        let {idcurso} = req.params;
-        if(!idcurso){
-            return res.status(400).json({msg: 'Seleccione un curso para buscar'});
+        let { idcurso } = req.params;
+        if (!idcurso) {
+            return res.status(400).json({ msg: 'Seleccione un curso para buscar' });
         }
         const inscritosPorCurso = await Inscripcion.findAll({
-            where:{
-                idcurso:idcurso,
+            where: {
+                idcurso: idcurso,
             },
-            include:[
-                {model:Estudiante},
-                {model:Curso}
+            include: [
+                { model: Estudiante },
+                { model: Curso }
             ]
         })
         return res.status(200).json(inscritosPorCurso);
     } catch (error) {
         console.log(error, 'Este es eel error al obtenr lista de isncritos de un curso')
-        res.status(500).json({msg: 'Ocurrio un error al obtenr la lsita de estudiantes inscritos', error })
-        
+        res.status(500).json({ msg: 'Ocurrio un error al obtenr la lsita de estudiantes inscritos', error })
+
     }
 }
 
