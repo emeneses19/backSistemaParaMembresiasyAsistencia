@@ -30,7 +30,7 @@ export const eliminarArea = async(req: Request, res: Response)=>{
             return res.status(400).json({msg:'No se encontro area con el codigo' + idarea});
         }
         await areaEncontrada.destroy();
-        return res.status(200),json({msg: 'El dato fue eliminado correctamente', error});
+        return res.status(200).json({msg: 'El dato fue eliminado correctamente', error});
     } catch (error) {
         res.status(500).json({msg: 'Ocurrio un error al eliminar el registro', error});
     }
