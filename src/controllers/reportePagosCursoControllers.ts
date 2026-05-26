@@ -7,41 +7,42 @@ export const obtenerListaDeCursosPorEstudiante = async (req: Request, res: Respo
         const { dni } = req.params;
         const cursos = await sequelize.query(
             `
-            SELECT
-            p.idperiodo AS idPeriodo,
-            p.nombreperiodo AS nombrePeriodo,
-            c.idcurso AS idCurso,
-            c.nombre AS cursoNombre,
-            c.costo AS costoCurso,
-            i.idinscripcion,
-            i.fechadeinscripcion,
-            e.dni,
-            e.nombres AS nombresEstudiante,
-            e.apellidos AS apellidosEstudiante,
-            e.celular,
-            CASE
-        WHEN (
-            SELECT
-                SUM(pc1.montototal)
+             SELECT
+                p.idperiodo AS idPeriodo,
+                p.nombreperiodo AS nombrePeriodo,
+                c.idcurso AS idCurso,
+                c.nombre AS cursoNombre,
+                            i.montoinscripcion,
+                c.costo AS costoCurso,
+                i.idinscripcion,
+                i.fechadeinscripcion,
+                e.dni,
+                e.nombres AS nombresEstudiante,
+                e.apellidos AS apellidosEstudiante,
+                e.celular,
+                CASE
+            WHEN (
+                SELECT
+                    SUM(pc1.montototal)
+                FROM
+                    pagocursos pc1
+                WHERE
+                    pc1.idinscripcion = i.idinscripcion
+                AND e.dni = i.dni
+            ) >= i.montoinscripcion THEN
+                'Pagado'
+            ELSE
+                'Pendiente'
+            END AS estato_Pago_Curso
             FROM
-                pagocursos pc1
+                inscripcion AS i
+            INNER JOIN estudiantes e ON e.dni = i.dni
+            INNER JOIN cursos c ON c.idcurso = i.idcurso
+            INNER JOIN periodos p ON p.idperiodo = c.idperiodo
             WHERE
-                pc1.idinscripcion = i.idinscripcion
-            AND e.dni = i.dni
-        ) >= c.costo THEN
-            'Pagado'
-        ELSE
-            'Pendiente'
-        END AS estato_Pago_Curso
-        FROM
-            inscripcion AS i
-        INNER JOIN estudiantes e ON e.dni = i.dni
-        INNER JOIN cursos c ON c.idcurso = i.idcurso
-        INNER JOIN periodos p ON p.idperiodo = c.idperiodo
-        WHERE
-            i.dni = :dni
-        ORDER BY
-            i.fechadeinscripcion DESC;
+                i.dni = :dni
+            ORDER BY
+                i.fechadeinscripcion DESC;
             `,
             {
                 type: QueryTypes.SELECT,

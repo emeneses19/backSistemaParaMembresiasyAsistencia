@@ -7,6 +7,7 @@ import { Op } from "sequelize";
 import { MembresiasMiembro } from "../models/MembresiasMiembro";
 import { sequelize } from "../config/database";
 import { ConfiguracionMembrersia } from "../models/ConfiguracionMembresia";
+import {convertirFechaString} from "../utils/feha.utils";
 
 export const crearEstudiante = async (req: Request, res: Response) => {
     try {
@@ -162,6 +163,7 @@ export const eliminarEstudiante = async (req: Request, res: Response) => {
 }
 
 export const pasarAMiembroEstudiantes = async (req: Request, res: Response) => {
+    
     try {
         const { estudiantes, idgruposmiembro, fechaasignacionmiembro } = req.body;
         if (!Array.isArray(estudiantes) ||
@@ -171,7 +173,13 @@ export const pasarAMiembroEstudiantes = async (req: Request, res: Response) => {
         ) {
             return res.status(400).json({ msg: 'Falta ingresar datos obligatorios' });
         }
-        const fechaBase = new Date(fechaasignacionmiembro);
+        console.log(fechaasignacionmiembro, "Su fecha de froont lo que llega");
+        
+        const fechaBase = fechaasignacionmiembro;
+        console.log(fechaBase, "Imprimiendo en datos lla fecha de base ");
+
+        const fechaBaseStr = convertirFechaString(fechaBase);
+        console.log(fechaBaseStr, "Imprimiendo que fecha llega desde front ");
         //buscando la configuracion de membresia con estado activo 
 
 
@@ -190,7 +198,7 @@ export const pasarAMiembroEstudiantes = async (req: Request, res: Response) => {
             const updates = estudiantes.map(estudiante =>
                 Estudiante.update({
                     esmiembro: true,
-                    fechaasignacionmiembro: fechaBase,
+                    fechaasignacionmiembro: fechaBaseStr,
                     idgruposmiembro: idgruposmiembro
                 }, {
                     where: {
@@ -203,19 +211,28 @@ export const pasarAMiembroEstudiantes = async (req: Request, res: Response) => {
 
             
           // Calcular las fechas del pago
-            const fechaLimite = new Date(fechaBase);
-            fechaLimite.setDate(fechaBase.getDate() + configuracionMembresia.cantidaddediasparapagar);
+          const fechaInicio = new Date(fechaBaseStr);
+          fechaInicio.setDate(fechaInicio.getDate());
+         
 
-            const fechaVencimiento = new Date(fechaBase);
-            fechaVencimiento.setMonth(fechaBase.getMonth() + configuracionMembresia.frecuenciamesesrenovacion);
+            const fechaLimite = new Date(fechaInicio);
+            fechaLimite.setDate(fechaLimite.getDate() + configuracionMembresia.cantidaddediasparapagar);
+
+            const fechaVencimiento = new Date(fechaInicio);
+            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + configuracionMembresia.frecuenciamesesrenovacion);
+
+            const fechaInicioStr = convertirFechaString(fechaInicio);
+            const fechaLimiteStr = convertirFechaString(fechaLimite);
+            const fechaVencimientoStr = convertirFechaString(fechaVencimiento);
+
 
             const createPromisse = estudiantes.map(estudiante =>
                 MembresiasMiembro.create({
                     dni: estudiante.dni,
                     descripcionmembresia: configuracionMembresia.descripcion,
-                    fechainicio:fechaBase,
-                    fechalimitedepago:fechaLimite,
-                    fechavencimientosugerida:fechaVencimiento,
+                    fechainicio:fechaInicioStr,
+                    fechalimitedepago:fechaLimiteStr,
+                    fechavencimientosugerida:fechaVencimientoStr,
                     montoesperado: configuracionMembresia.montoparamembresia,
                     montopagado:0,
                     idconfiguracionmembresia:configuracionMembresia.idconfiguracionmembresia

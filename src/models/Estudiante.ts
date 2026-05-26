@@ -15,7 +15,7 @@ export interface EstudianteAttributes {
     estado: string;
     fecharegistro?: Date;
     esmiembro: boolean;
-    fechaasignacionmiembro?: Date;
+    fechaasignacionmiembro?: Date | string;
     fechadeultimaactualizacion?: Date;
     idgruposmiembro?: number | null;
     idarea?: number | null;

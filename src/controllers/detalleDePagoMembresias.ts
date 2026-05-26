@@ -5,6 +5,7 @@ import { PagoMembresiasEstudiante } from "../models/PagoMembresiaMiembro";
 import { MembresiasMiembro } from "../models/MembresiasMiembro";
 import { Estudiante } from "../models/Estudiante";
 import { sequelize } from "../config/database";
+import {convertirFechaString} from "../utils/feha.utils"
 
 export const reporteDetalleDePagosMembresiaPorFecha = async(req:Request, res: Response)=>{
     try {
@@ -12,11 +13,14 @@ export const reporteDetalleDePagosMembresiaPorFecha = async(req:Request, res: Re
         if (!fechaInicio || !fechaFin) {
             res.status(400).json({msg:'Ingrese las fechas para el reporte'});
         }
-        let fechaValidaInicio = new Date(fechaInicio as string);
-        let fechaValidaFin = new Date(fechaFin as string);
-        if(fechaValidaInicio > fechaValidaFin){
+        if(new Date(fechaInicio as string) > new Date(fechaFin as string)){
             res.status(400).json({msg:'La fecha superior no puede ser menor a la fecha inicio'});
+
         }
+        let fechaValidaInicio = convertirFechaString(fechaInicio as string);
+        let finBaseStr = convertirFechaString(fechaFin as string);
+
+       const fechaValidaFin = `${finBaseStr.split(' ')[0]} 23:59:59`;
         const detalleDePagoMembresias = await sequelize.query(
             `
             SELECT 
@@ -45,7 +49,7 @@ export const reporteDetalleDePagosMembresiaPorFecha = async(req:Request, res: Re
             on dp.idmembresia = m.idmembresia 
             INNER JOIN estudiantes e
             on e.dni = m.dni
-            WHERE DATE(p.fecha)  BETWEEN :fechaInicio AND :fechaFin
+            WHERE p.fecha  BETWEEN :fechaInicio AND :fechaFin
             ORDER BY p.fecha DESC;
             `,{
                 replacements:{

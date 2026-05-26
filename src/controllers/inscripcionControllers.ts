@@ -117,7 +117,7 @@ export const listaDeInscripcionesPorCurso = async (req: Request, res: Response) 
         })
         return res.status(200).json(inscritosPorCurso);
     } catch (error) {
-        console.log(error, 'Este es eel error al obtenr lista de isncritos de un curso')
+        console.log(error, 'Este es el error al obtener lista de inscritos de un curso')
         res.status(500).json({ msg: 'Ocurrio un error al obtenr la lsita de estudiantes inscritos', error })
 
     }

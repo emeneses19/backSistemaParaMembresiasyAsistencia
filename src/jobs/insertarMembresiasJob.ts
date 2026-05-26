@@ -7,28 +7,31 @@ import { Estudiante } from "../models/Estudiante";
 
 export const insertarMembresiasDeMiembrosTarea = async () => {
 
-    const normalizeToStartOfDayLocal = (date:Date) => {
+    const normalizeToStartOfDayLocal = (date: Date) => {
         const newDate = new Date(date);
-        newDate.setHours(0, 0, 0, 0);
-        return newDate;
+        const anio = newDate.getFullYear();
+        const mes = String(newDate.getMonth() + 1).padStart(2, '0');
+        const dia = String(newDate.getDate()).padStart(2, '0');
+        return `${anio}-${mes}-${dia} 00:00:00`;
     };
     console.log(normalizeToStartOfDayLocal(new Date()));
     try {
         console.log("Iniciando la tarea programada: Inserción de nuevas membresías.")
 
         const hoy = new Date();
-        hoy.setUTCHours(0, 0, 0, 0);
+        const anio = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
 
-        const finDeHoy = new Date(hoy);
-        finDeHoy.setUTCDate(hoy.getUTCDate() + 1);
-        finDeHoy.setUTCMilliseconds(finDeHoy.getUTCMilliseconds() - 1);
+        const inicioHoyStr = `${anio}-${mes}-${dia} 00:00:00`;
+        const finHoyStr = `${anio}-${mes}-${dia} 23:59:59`;
+        console.log(`Buscando membresías que venzan entre: ${inicioHoyStr} y ${finHoyStr}`);
 
-        console.log(`aqui es para consulta ${finDeHoy}`);
 
         const estudiantesConMembresiasvencidas = await MembresiasMiembro.findAll({
             where: {
                 fechavencimientosugerida: {
-                    [Op.between]: [hoy, finDeHoy]
+                    [Op.between]: [inicioHoyStr, finHoyStr]
                 }
             },
             include: [
@@ -57,27 +60,27 @@ export const insertarMembresiasDeMiembrosTarea = async () => {
         try {
 
             const today = new Date();
-            const fechaInicioNueva = normalizeToStartOfDayLocal(today);
+            const fechaInicioNueva = new Date(today);
+            fechaInicioNueva.setDate(fechaInicioNueva.getDate() + 1);
 
-            const fechaLimite = normalizeToStartOfDayLocal(fechaInicioNueva);
+            const fechaLimite = new Date(fechaInicioNueva);
             fechaLimite.setDate(fechaLimite.getDate() + configuracionMembresia.cantidaddediasparapagar);
-          
-            const fechaVencimiento = normalizeToStartOfDayLocal(fechaInicioNueva);
-            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + configuracionMembresia.frecuenciamesesrenovacion);
-        
-            
-            const fechaInicioMembresia = normalizeToStartOfDayLocal(fechaInicioNueva);
-            fechaInicioMembresia.setDate(fechaInicioMembresia.getDate() + 1);
 
-             console.log(`fecha inicio nueva ${fechaInicioMembresia}`);
+            const fechaVencimiento = new Date(fechaInicioNueva);
+            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + configuracionMembresia.frecuenciamesesrenovacion);
+            const fechaInicioStr = normalizeToStartOfDayLocal(fechaInicioNueva);
+            const fechaLimiteStr = normalizeToStartOfDayLocal(fechaLimite);
+            const fechaVencimientoStr = normalizeToStartOfDayLocal(fechaVencimiento);
+
+            console.log(`fecha inicio nueva ${fechaInicioStr}`);
 
             const createMembresias = estudiantesConMembresiasvencidas.map(estudiante =>
                 MembresiasMiembro.create({
                     dni: estudiante.dni,
                     descripcionmembresia: configuracionMembresia.descripcion,
-                    fechainicio: fechaInicioMembresia,
-                    fechalimitedepago: fechaLimite,
-                    fechavencimientosugerida: fechaVencimiento,
+                    fechainicio: fechaInicioStr,
+                    fechalimitedepago: fechaLimiteStr,
+                    fechavencimientosugerida: fechaVencimientoStr,
                     montoesperado: configuracionMembresia.montoparamembresia,
                     montopagado: 0,
                     idconfiguracionmembresia: configuracionMembresia.idconfiguracionmembresia
@@ -88,7 +91,7 @@ export const insertarMembresiasDeMiembrosTarea = async () => {
             await Promise.all([...createMembresias,]);
             await t.commit();
             console.log('Membresías creadas correctamente.');
-             console.log(`membresias creadas ${createMembresias}`);
+            console.log(`membresias creadas ${createMembresias}`);
 
 
         } catch (error) {

@@ -6,7 +6,8 @@ import { Curso } from "./Curso";
 
 export interface InscripcionAtributes {
     idinscripcion: string,
-    fechadeinscripcion: Date,
+    montoinscripcion:number,
+    fechadeinscripcion: Date | string,
     estado: string,
     dni: string,
     idcurso: number
@@ -14,6 +15,7 @@ export interface InscripcionAtributes {
 
 export class Inscripcion extends Model<InscripcionAtributes> implements InscripcionAtributes {
     idinscripcion!: string;
+    montoinscripcion!:number;
     fechadeinscripcion!: Date;
     estado!: string;
     dni!: string;
@@ -25,6 +27,10 @@ Inscripcion.init({
         type: DataTypes.STRING(45),
         allowNull: false,
         primaryKey: true
+    },
+    montoinscripcion:{
+        type:DataTypes.DECIMAL,
+        allowNull:false,
     },
     fechadeinscripcion: {
         type: DataTypes.DATE,

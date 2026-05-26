@@ -6,7 +6,7 @@ export interface PagoMembresiasEstudianteAtributes {
     idpagosmebresiasmiembro?: number,
     seriecorrelativopagomembresia: string,
     numerocorrelativopagomembresia: number,
-    fecha: Date,
+    fecha: Date | string,
     fechahoraregistro?: Date,
     montotal: number,
     observacion?: string,

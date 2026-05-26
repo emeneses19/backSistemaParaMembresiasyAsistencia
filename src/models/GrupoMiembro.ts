@@ -4,7 +4,7 @@ import { sequelize } from "../config/database";
 export interface GrupoMiembroAtributes {
     idgruposmiembro: number;
     nombredelgrupo:string;
-    fechacreacion: Date;
+    fechacreacion: Date | string;
 }
 
 export class GrupoMiembro extends Model<GrupoMiembroAtributes> implements GrupoMiembroAtributes{

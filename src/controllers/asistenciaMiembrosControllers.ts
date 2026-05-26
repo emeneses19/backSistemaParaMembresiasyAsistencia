@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AsistenciasMiembro } from "../models/AsistenciasMiembro";
 import { Sesion } from "../models/Sesion";
 import { col, fn, literal, Op } from "sequelize";
+import {convertirFechaString} from "../utils/feha.utils"
 
 export const registrarAsistenciaMiembro = async (req: Request, res: Response) => {
     try {
@@ -41,11 +42,10 @@ export const listaDeAsistenciasPorRangoFechas = async (req: Request, res: Respon
         }
         const fechaInicioStr = fechaInicio as string;
         const fechaFinStr = fechaFin as string;
-        const fechaInicioValida = new Date(fechaInicioStr);
-        const fechaFinValida = new Date(fechaFinStr);
+        const fechaInicioValida = convertirFechaString(fechaInicioStr);
+        const finBaseStr = convertirFechaString(fechaFinStr);
         // Normalizar rango solo si son válidas
-        fechaInicioValida.setHours(0, 0, 0, 0);
-        fechaFinValida.setHours(23, 59, 59, 999);
+        const fechaFinValida = `${finBaseStr.split(' ')[0]} 23:59:59`;
 
 
         if (fechaInicioValida > fechaFinValida) {

@@ -5,10 +5,13 @@ import { Estudiante } from "../models/Estudiante";
 import { Op, QueryTypes } from "sequelize";
 import { AsistenciasMiembro } from "../models/AsistenciasMiembro";
 
+
 export const crearSesion = async (req: Request, res: Response) => {
 
     const t = await sequelize.transaction();
     try {
+        
+
         const nuevaSesion = await Sesion.create(req.body, { transaction: t });
         if (!nuevaSesion.idgruposmiembro) {
             await t.rollback();
